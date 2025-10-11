@@ -1,0 +1,46 @@
+"""Dependency para validação de API key em rotas específicas."""
+
+from typing import Optional
+from fastapi import Header, Depends, HTTPException, status
+
+from ..providers.base import BaseAPIKeyProvider
+from ..exceptions import UnauthorizedException, ForbiddenException
+
+
+class APIKeyDependency:
+    """Dependency para validação de API key em rotas específicas."""
+    
+    def __init__(
+        self,
+        provider: BaseAPIKeyProvider,
+        header_name: str = "X-API-Key",
+        auto_error: bool = True
+    ):
+        self.provider = provider
+        self.header_name = header_name
+        self.auto_error = auto_error
+    
+    async def __call__(self, api_key: Optional[str] = Header(None, alias="X-API-Key")):
+        if not api_key:
+            if self.auto_error:
+                raise UnauthorizedException(f"API key required in '{self.header_name}' header")
+            return None
+        
+        is_valid = await self.provider.validate_key(api_key)
+        
+        if not is_valid:
+            if self.auto_error:
+                raise ForbiddenException("Invalid API key")
+            return None
+        
+        return api_key
+
+
+def get_api_key_metadata(provider: BaseAPIKeyProvider):
+    """Dependency para obter metadados da API key."""
+    
+    async def dependency(api_key: str = Depends(APIKeyDependency(provider))):
+        metadata = await provider.get_key_metadata(api_key)
+        return metadata
+    
+    return dependency
