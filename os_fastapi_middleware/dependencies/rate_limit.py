@@ -1,8 +1,8 @@
 """Dependency para rate limiting em rotas específicas."""
 
 from fastapi import Request, HTTPException, status
-from ..providers.base import BaseRateLimitProvider
-from ..exceptions import RateLimitExceededException
+from os_fastapi_middleware.providers.base import BaseRateLimitProvider
+from os_fastapi_middleware.exceptions import RateLimitExceededException
 
 
 class RateLimitDependency:

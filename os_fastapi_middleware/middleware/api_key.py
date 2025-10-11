@@ -4,8 +4,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 from fastapi import status
 
-from ..providers.base import BaseAPIKeyProvider
-from ..exceptions import UnauthorizedException
+from os_fastapi_middleware.providers.base import BaseAPIKeyProvider
 
 
 class APIKeyMiddleware(BaseHTTPMiddleware):

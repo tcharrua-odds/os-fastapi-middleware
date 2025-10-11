@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "os-fastapi-middleware"
 version = "1.0.0"
-description = "Adaptable security middleware for FastAPI: API keys, rate limiting, IP whitelist"
+description = "Adaptable security middlewares for FastAPI: API keys, rate limiting, IP whitelist"
 readme = "README.md"
 requires-python = ">=3.8"
 license = {text = "MIT"}
@@ -42,11 +42,11 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/seu-usuario/fastapi-security-middleware"
-Documentation = "https://fastapi-security-middleware.readthedocs.io"
-Repository = "https://github.com/seu-usuario/fastapi-security-middleware"
-Issues = "https://github.com/seu-usuario/fastapi-security-middleware/issues"
+Homepage = "https://github.com/tcharrua-odds/os-fastapi-middleware"
+Documentation = "https://github.com/tcharrua-odds/os-fastapi-middleware/blob/main/README.md"
+Repository = "https://github.com/tcharrua-odds/os-fastapi-middleware"
+Issues = "https://github.com/tcharrua-odds/os-fastapi-middleware/issues"
 
 [tool.pytest.ini_options]
-pythonpath = ["src"]
+pythonpath = ["."]
 addopts = "-q"

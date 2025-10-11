@@ -1,17 +1,7 @@
-import os, sys
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+from os_fastapi_middleware import InMemoryAPIKeyProvider, InMemoryRateLimitProvider, InMemoryIPWhitelistProvider, \
+    RateLimitMiddleware, APIKeyMiddleware, IPWhitelistMiddleware
 
 from fastapi import FastAPI, Request
-from fastapi_security.middleware import (
-    APIKeyMiddleware,
-    RateLimitMiddleware,
-    IPWhitelistMiddleware
-)
-from fastapi_security.providers.memory import (
-    InMemoryAPIKeyProvider,
-    InMemoryRateLimitProvider,
-    InMemoryIPWhitelistProvider
-)
 
 # Create FastAPI app
 app = FastAPI(title="My Secure API")
@@ -49,9 +39,11 @@ app.add_middleware(
     provider=ip_whitelist_provider
 )
 
+
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
+
 
 @app.get("/secure")
 async def secure_endpoint(request: Request):

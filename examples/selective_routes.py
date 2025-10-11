@@ -1,24 +1,14 @@
-"""
-Demonstração de proteção SELETIVA por rota, usando dependencies ao invés de middleware global.
-
-Isto é útil quando apenas alguns endpoints devem exigir API Key / Rate Limit / IP whitelist.
-
-Para simplificar, as dependencies abaixo usam os providers in-memory do pacote e
-implementam a verificação diretamente. Em sua biblioteca, você pode expor funções
-prontas em `fastapi_security.dependencies` com a mesma ideia.
-"""
+import os
+import sys
 from typing import Optional, Callable
-import os, sys
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+
+from os_fastapi_middleware import InMemoryAPIKeyProvider, InMemoryRateLimitProvider, InMemoryIPWhitelistProvider
+
+# Allow running the example from the repo without installing the package
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from fastapi import FastAPI, Depends, Header, HTTPException, Request, status
 from fastapi.responses import JSONResponse
-
-from fastapi_security.providers.memory import (
-    InMemoryAPIKeyProvider,
-    InMemoryRateLimitProvider,
-    InMemoryIPWhitelistProvider,
-)
 
 app = FastAPI(title="Selective Routes Example")
 
@@ -35,8 +25,8 @@ ip_whitelist_provider = InMemoryIPWhitelistProvider(allowed_ips=["127.0.0.1"])  
 
 # 1) Dependency: exige API key somente onde aplicada
 async def require_api_key(
-    request: Request,
-    x_api_key: Optional[str] = Header(default=None, alias="X-API-Key"),
+        request: Request,
+        x_api_key: Optional[str] = Header(default=None, alias="X-API-Key"),
 ):
     if not x_api_key:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="API key required")
@@ -52,12 +42,13 @@ async def require_api_key(
 
 # 2) Dependency: rate limit seletivo
 async def selective_rate_limit(
-    request: Request,
-    requests_per_window: int = 5,
-    window_seconds: int = 60,
-    key_func: Optional[Callable[[Request], str]] = None,
+        request: Request,
+        requests_per_window: int = 5,
+        window_seconds: int = 60,
+        key_func: Optional[Callable[[Request], str]] = None,
 ):
-    key_func = key_func or (lambda req: f"rl:api_key:{getattr(req.state, 'api_key', 'anon')}" if hasattr(req.state, 'api_key') else f"rl:ip:{req.client.host if req.client else 'unknown'}")
+    key_func = key_func or (lambda req: f"rl:api_key:{getattr(req.state, 'api_key', 'anon')}" if hasattr(req.state,
+                                                                                                         'api_key') else f"rl:ip:{req.client.host if req.client else 'unknown'}")
     key = key_func(request)
 
     allowed = await rate_limit_provider.check_rate_limit(key, requests_per_window, window_seconds)

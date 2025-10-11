@@ -4,7 +4,7 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from fastapi_security import RateLimitMiddleware, InMemoryRateLimitProvider
+from os_fastapi_middleware import RateLimitMiddleware, InMemoryRateLimitProvider
 
 
 @pytest.fixture

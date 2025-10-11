@@ -1,4 +1,4 @@
-# Publishing fastapi-security-middleware to the public (PyPI)
+# Publishing os-fastapi-middleware to the public (PyPI)
 
 This guide walks you through releasing this library publicly. It covers local builds, TestPyPI dry-runs, real PyPI uploads, and optional CI-based Trusted Publishing.
 
@@ -10,7 +10,7 @@ Prerequisites
 
 1) Check and complete project metadata
 - Edit pyproject.toml and replace placeholders with real data:
-  - project.name: the final package name (e.g., fastapi-security-middleware)
+  - project.name: the final package name (e.g., os-fastapi-middleware)
   - project.version: follow SemVer (e.g., 1.0.0). Bump for every release
   - project.authors: your name/email
   - project.urls: set real repository, homepage, docs, issues URLs
@@ -19,8 +19,8 @@ Prerequisites
 - License is set to MIT by default; update if necessary
 
 2) Verify package layout
-- Your package lives at fastapi_security/ in the repo root and pyproject.toml uses setuptools as the backend.
-- Setuptools will auto-discover packages by default. No src/ mapping is used here; you don’t need changes.
+- Your package lives at fastapi_security/ with a compatibility public import at os_fastapi_middleware/ in the repo root.
+- Setuptools will auto-discover packages by default. No src/ mapping is used here.
 - If you later migrate to a src layout, you must configure package_dir/find options accordingly.
 
 3) Build distributions
@@ -43,14 +43,14 @@ Prerequisites
   - python -m venv .venv-test
   - source .venv-test/bin/activate  # or .venv-test\Scripts\activate on Windows
   - python -m pip install --upgrade pip
-  - python -m pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple fastapi-security-middleware
-  - python -c "import fastapi_security; print(fastapi_security.__version__)"
+  - python -m pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple os-fastapi-middleware
+  - python -c "import os_fastapi_middleware as m; print(getattr(m, '__version__', 'ok'))"
 
 6) Publish to PyPI
 - Create a PyPI API token and store it locally as PYPI_TOKEN
 - Upload:
   - twine upload -u __token__ -p $PYPI_TOKEN dist/*
-- Confirm the release at https://pypi.org/project/fastapi-security-middleware/
+- Confirm the release at https://pypi.org/project/os-fastapi-middleware/
 
 7) Tag the release in Git
 - Use an annotated tag that matches your version:
@@ -59,7 +59,7 @@ Prerequisites
 
 8) Optional: GitHub Actions Trusted Publishing (no API tokens)
 - PyPI supports OIDC-based Trusted Publishing to avoid storing secrets. High-level steps:
-  1. Create a new PyPI project named fastapi-security-middleware and enable "Trusted Publishers"; add your GitHub repo as a publisher (Actions)
+  1. Create a new PyPI project named os-fastapi-middleware and enable "Trusted Publishers"; add your GitHub repo as a publisher (Actions)
   2. Add a workflow file like .github/workflows/release.yml that builds on tag and uses pypa/gh-action-pypi-publish
 
 Example workflow:
@@ -96,6 +96,6 @@ Notes and tips
 - Pre-release: use pre-release versions (e.g., 1.1.0rc1) for candidates; Twine will upload them; pip can install pre-releases with --pre
 - Test matrix: before releasing, run tests locally: python -m pip install -e .[dev] && pytest
 - Readme badges: add PyPI version, Python versions, license, and CI status badges to README.md
-- Package import path: users will import as `from fastapi_security.middleware import APIKeyMiddleware`, so confirm __init__ exports are in place (already present)
+- Package import path: users will import as `from os_fastapi_middleware.middleware import APIKeyMiddleware`, so confirm __init__ exports are in place (already present)
 
 If you want, we can add a GitHub Actions workflow file for releases now. Open an issue and we’ll wire it up to use Trusted Publishing or an API token.

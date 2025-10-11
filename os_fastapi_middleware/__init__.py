@@ -1,20 +1,18 @@
 """FastAPI Security Middleware - Biblioteca de segurança adaptável."""
-
+from .dependencies.api_key import APIKeyDependency
+from .dependencies.ip_whitelist import IPWhitelistDependency
+from .dependencies.rate_limit import RateLimitDependency
 from .middleware.api_key import APIKeyMiddleware
 from .middleware.rate_limit import RateLimitMiddleware
 from .middleware.ip_whitelist import IPWhitelistMiddleware
 
-from .dependencies.api_key import APIKeyDependency
-from .dependencies.rate_limit import RateLimitDependency
-from .dependencies.ip_whitelist import IPWhitelistDependency
-
-from .providers.base import (
+from os_fastapi_middleware.providers.base import (
     BaseAPIKeyProvider,
     BaseRateLimitProvider,
     BaseIPWhitelistProvider
 )
 
-from .providers.memory import (
+from os_fastapi_middleware.providers.memory import (
     InMemoryAPIKeyProvider,
     InMemoryRateLimitProvider,
     InMemoryIPWhitelistProvider

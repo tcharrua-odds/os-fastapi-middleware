@@ -6,34 +6,20 @@ Exemplos de providers customizados:
 Requisitos extras (instale apenas se for usar):
     pip install asyncpg
 """
-from typing import Optional, List, Dict, Any
-import os
-import asyncio
 import ipaddress
+import os
+from typing import Optional, List, Dict, Any
+
+from fastapi import FastAPI, status
+from starlette.responses import JSONResponse
+
+from os_fastapi_middleware import BaseAPIKeyProvider, BaseIPWhitelistProvider, InMemoryRateLimitProvider, \
+    IPWhitelistMiddleware, APIKeyMiddleware, RateLimitMiddleware
 
 try:
     import asyncpg  # type: ignore
 except Exception:  # pragma: no cover
     asyncpg = None  # Permite importar o arquivo mesmo sem asyncpg
-
-import os, sys
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
-
-from fastapi import FastAPI
-from fastapi import status
-from fastapi.responses import JSONResponse
-from fastapi_security.middleware import (
-    APIKeyMiddleware,
-    IPWhitelistMiddleware,
-    RateLimitMiddleware,
-)
-from fastapi_security.providers.base import (
-    BaseAPIKeyProvider,
-    BaseIPWhitelistProvider,
-)
-from fastapi_security.providers.memory import (
-    InMemoryRateLimitProvider,
-)
 
 
 class DatabaseAPIKeyProvider(BaseAPIKeyProvider):

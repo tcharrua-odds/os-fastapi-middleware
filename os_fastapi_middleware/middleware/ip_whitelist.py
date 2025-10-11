@@ -5,7 +5,7 @@ from starlette.responses import JSONResponse
 from fastapi import status
 import ipaddress
 
-from ..providers.base import BaseIPWhitelistProvider
+from os_fastapi_middleware.providers.base import BaseIPWhitelistProvider
 
 
 class IPWhitelistMiddleware(BaseHTTPMiddleware):

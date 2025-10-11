@@ -3,8 +3,8 @@
 from typing import Optional
 from fastapi import Header, Depends, HTTPException, status
 
-from ..providers.base import BaseAPIKeyProvider
-from ..exceptions import UnauthorizedException, ForbiddenException
+from os_fastapi_middleware.providers.base import BaseAPIKeyProvider
+from os_fastapi_middleware.exceptions import UnauthorizedException, ForbiddenException
 
 
 class APIKeyDependency:

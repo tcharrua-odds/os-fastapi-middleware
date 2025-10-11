@@ -4,7 +4,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 from fastapi import status
 
-from ..providers.base import BaseRateLimitProvider
+from os_fastapi_middleware.providers.base import BaseRateLimitProvider
 
 
 class RateLimitMiddleware(BaseHTTPMiddleware):

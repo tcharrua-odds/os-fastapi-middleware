@@ -2,8 +2,8 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from fastapi_security.middleware.ip_whitelist import IPWhitelistMiddleware
-from fastapi_security.providers.memory import InMemoryIPWhitelistProvider
+from os_fastapi_middleware import IPWhitelistMiddleware
+from os_fastapi_middleware import InMemoryIPWhitelistProvider
 from fastapi import status
 
 

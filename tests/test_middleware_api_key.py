@@ -4,7 +4,7 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from fastapi_security import APIKeyMiddleware, InMemoryAPIKeyProvider
+from os_fastapi_middleware import APIKeyMiddleware, InMemoryAPIKeyProvider
 
 
 @pytest.fixture

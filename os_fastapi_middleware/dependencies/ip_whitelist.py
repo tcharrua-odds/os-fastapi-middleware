@@ -1,8 +1,8 @@
 """Dependency para IP whitelist em rotas específicas."""
 
 from fastapi import Request
-from ..providers.base import BaseIPWhitelistProvider
-from ..exceptions import IPNotAllowedException
+from os_fastapi_middleware.providers.base import BaseIPWhitelistProvider
+from os_fastapi_middleware.exceptions import IPNotAllowedException
 
 
 class IPWhitelistDependency:
