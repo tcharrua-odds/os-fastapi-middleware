@@ -8,10 +8,6 @@ from os_fastapi_middleware.providers.base import BaseRateLimitProvider
 
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
-    """
-    Middleware para rate limiting.
-    Adaptável através de diferentes providers (Redis, Database, Memory).
-    """
     
     def __init__(
         self,
@@ -26,14 +22,14 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     ):
         """
         Args:
-            app: Aplicação FastAPI/Starlette
-            provider: Provider para rate limiting
-            requests_per_window: Número de requests permitidos
-            window_seconds: Janela de tempo em segundos
-            key_func: Função para gerar chave única (default: IP ou API key)
-            exempt_paths: Paths que não têm rate limit
-            on_limit_exceeded: Callback quando limite é excedido
-            add_headers: Se True, adiciona headers X-RateLimit-* nas respostas
+            app: Application FastAPI/Starlette
+            provider:  Provider to check rate limit
+            requests_per_window: Number of requests allowed per window
+            window_seconds: Window duration in seconds
+            key_func: Function to generate rate limit key
+            exempt_paths: Paths to exempt from rate limit
+            on_limit_exceeded: Callback when rate limit is exceeded
+            add_headers: If true, add rate limit headers to response
         """
         super().__init__(app)
         self.provider = provider
@@ -48,20 +44,13 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         self.add_headers = add_headers
     
     def _default_key_func(self, request: Request) -> str:
-        """
-        Função padrão para gerar chave de rate limit.
-        Prioriza API key, depois IP.
-        """
-        # Check if API key is available (from APIKeyMiddleware)
         if hasattr(request.state, 'api_key'):
             return f"rate_limit:api_key:{request.state.api_key}"
-        
-        # Fall back to IP address
+
         client_ip = self._get_client_ip(request)
         return f"rate_limit:ip:{client_ip}"
     
     def _get_client_ip(self, request: Request) -> str:
-        """Extrai IP do cliente considerando proxies."""
         forwarded_for = request.headers.get("X-Forwarded-For")
         if forwarded_for:
             return forwarded_for.split(",")[0].strip()
@@ -73,15 +62,12 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         return request.client.host if request.client else "unknown"
     
     async def dispatch(self, request: Request, call_next):
-        # Skip rate limiting for exempt paths
         if request.url.path in self.exempt_paths:
             return await call_next(request)
-        
-        # Generate rate limit key
+
         rate_limit_key = self.key_func(request)
         
         try:
-            # Check rate limit
             within_limit = await self.provider.check_rate_limit(
                 key=rate_limit_key,
                 limit=self.requests_per_window,
@@ -101,11 +87,9 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                     },
                     headers={"Retry-After": str(self.window_seconds)}
                 )
-            
-            # Get response
+
             response = await call_next(request)
-            
-            # Add rate limit headers if enabled
+
             if self.add_headers:
                 remaining = await self.provider.get_remaining_requests(
                     rate_limit_key,
@@ -119,5 +103,4 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             return response
             
         except Exception as e:
-            # Fail open: allow request if provider fails
             return await call_next(request)

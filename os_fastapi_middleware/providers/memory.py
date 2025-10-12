@@ -4,13 +4,12 @@ from .base import BaseAPIKeyProvider, BaseRateLimitProvider, BaseIPWhitelistProv
 
 
 class InMemoryAPIKeyProvider(BaseAPIKeyProvider):
-    """Provider simples em memória para API keys (útil para testes)."""
     
     def __init__(self, valid_keys: Dict[str, dict]):
         """
         Args:
-            valid_keys: Dict com API keys e seus metadados
-                       Exemplo: {"key123": {"user": "john", "tier": "premium"}}
+            valid_keys: Dict with valid keys and metadata.
+                       Example: {"key123": {"user": "john", "tier": "premium"}}
         """
         self.valid_keys = valid_keys
     
@@ -22,7 +21,6 @@ class InMemoryAPIKeyProvider(BaseAPIKeyProvider):
 
 
 class InMemoryRateLimitProvider(BaseRateLimitProvider):
-    """Provider em memória para rate limiting (útil para testes)."""
     
     def __init__(self):
         self.storage: Dict[str, List[float]] = {}
@@ -34,22 +32,18 @@ class InMemoryRateLimitProvider(BaseRateLimitProvider):
         window_seconds: int
     ) -> bool:
         current_time = time.time()
-        
-        # Initialize if key doesn't exist
+
         if key not in self.storage:
             self.storage[key] = []
-        
-        # Remove expired timestamps
+
         self.storage[key] = [
             ts for ts in self.storage[key]
             if current_time - ts < window_seconds
         ]
-        
-        # Check if within limit
+
         if len(self.storage[key]) >= limit:
             return False
-        
-        # Add current timestamp
+
         self.storage[key].append(current_time)
         return True
     
@@ -72,7 +66,6 @@ class InMemoryRateLimitProvider(BaseRateLimitProvider):
 
 
 class InMemoryIPWhitelistProvider(BaseIPWhitelistProvider):
-    """Provider em memória para IP whitelist."""
     
     def __init__(self, allowed_ips: List[str]):
         self.allowed_ips = set(allowed_ips)

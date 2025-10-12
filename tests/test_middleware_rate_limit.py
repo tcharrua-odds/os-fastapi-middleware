@@ -1,5 +1,3 @@
-"""Testes para RateLimitMiddleware."""
-
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -30,8 +28,7 @@ def app_with_rate_limit():
 
 def test_rate_limit_within_limit(app_with_rate_limit):
     client = TestClient(app_with_rate_limit)
-    
-    # Faz 5 requests (dentro do limite)
+
     for i in range(5):
         response = client.get("/")
         assert response.status_code == 200
@@ -41,12 +38,10 @@ def test_rate_limit_within_limit(app_with_rate_limit):
 
 def test_rate_limit_exceeded(app_with_rate_limit):
     client = TestClient(app_with_rate_limit)
-    
-    # Faz 5 requests (limite)
+
     for _ in range(5):
         client.get("/")
-    
-    # 6º request deve ser bloqueado
+
     response = client.get("/")
     assert response.status_code == 429
     assert "Rate limit exceeded" in response.json()["detail"]

@@ -4,14 +4,12 @@ from .base import BaseRateLimitProvider
 
 
 class RedisRateLimitProvider(BaseRateLimitProvider):
-    """Provider de rate limiting usando Redis."""
     
     def __init__(self, redis_url: str = "redis://localhost:6379"):
         self.redis_url = redis_url
         self.redis_client: Optional[redis.Redis] = None
     
     async def init(self):
-        """Inicializa conexão com Redis."""
         # redis.asyncio.from_url returns an async Redis client; no await needed
         self.redis_client = redis.from_url(
             self.redis_url,
@@ -20,7 +18,6 @@ class RedisRateLimitProvider(BaseRateLimitProvider):
         )
     
     async def close(self):
-        """Fecha conexão com Redis."""
         if self.redis_client:
             try:
                 await self.redis_client.aclose()
@@ -34,14 +31,11 @@ class RedisRateLimitProvider(BaseRateLimitProvider):
         limit: int, 
         window_seconds: int
     ) -> bool:
-        """Implementação usando sliding window com Redis."""
         if not self.redis_client:
             await self.init()
-        
-        # Increment counter
+
         current = await self.redis_client.incr(key)
-        
-        # Set expiration on first request
+
         if current == 1:
             await self.redis_client.expire(key, window_seconds)
         
@@ -53,7 +47,6 @@ class RedisRateLimitProvider(BaseRateLimitProvider):
         limit: int, 
         window_seconds: int
     ) -> int:
-        """Retorna requests restantes."""
         if not self.redis_client:
             await self.init()
         

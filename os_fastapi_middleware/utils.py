@@ -6,26 +6,24 @@ from typing import List
 
 def is_ip_in_network(ip: str, networks: List[str]) -> bool:
     """
-    Verifica se um IP está em uma lista de redes (suporta CIDR).
+    Verify if an IP is in a list of networks.
     
     Args:
-        ip: Endereço IP a verificar
-        networks: Lista de IPs ou redes em notação CIDR
+        ip: Ip address to verify
+        networks: Ip addresses or networks to verify
         
     Returns:
-        True se o IP está permitido
+        True if allowed, False otherwise
     """
     try:
         ip_obj = ipaddress.ip_address(ip)
         
         for network in networks:
             try:
-                # Tenta como rede CIDR
                 if "/" in network:
                     network_obj = ipaddress.ip_network(network, strict=False)
                     if ip_obj in network_obj:
                         return True
-                # Tenta como IP único
                 else:
                     if ip_obj == ipaddress.ip_address(network):
                         return True
@@ -39,13 +37,13 @@ def is_ip_in_network(ip: str, networks: List[str]) -> bool:
 
 def hash_api_key(api_key: str) -> str:
     """
-    Gera hash de uma API key para armazenamento seguro.
+    Generate hash of an API key.
     
     Args:
-        api_key: API key em texto plano
+        api_key: Api key to hash
         
     Returns:
-        Hash SHA-256 da API key
+        Api key SHA256 hash
     """
     import hashlib
     return hashlib.sha256(api_key.encode()).hexdigest()
@@ -53,13 +51,13 @@ def hash_api_key(api_key: str) -> str:
 
 def generate_api_key(length: int = 32) -> str:
     """
-    Gera uma API key aleatória.
+    Generate a random API key.
     
     Args:
-        length: Comprimento da chave
+        length: Key length
         
     Returns:
-        API key gerada
+        Generated API key
     """
     import secrets
     import string

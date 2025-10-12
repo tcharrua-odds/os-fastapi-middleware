@@ -1,5 +1,3 @@
-"""Fixtures compartilhadas para os testes."""
-
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -7,7 +5,6 @@ from fastapi.testclient import TestClient
 
 @pytest.fixture
 def app():
-    """Cria uma aplicação FastAPI para testes."""
     app = FastAPI()
     
     @app.get("/")
@@ -27,5 +24,4 @@ def app():
 
 @pytest.fixture
 def client(app):
-    """Cria um cliente de teste."""
     return TestClient(app)

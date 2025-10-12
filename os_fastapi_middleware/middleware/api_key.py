@@ -8,10 +8,6 @@ from os_fastapi_middleware.providers.base import BaseAPIKeyProvider
 
 
 class APIKeyMiddleware(BaseHTTPMiddleware):
-    """
-    Middleware para autenticação via API key.
-    Totalmente adaptável através de providers customizados.
-    """
     
     def __init__(
         self,
@@ -24,12 +20,12 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
     ):
         """
         Args:
-            app: Aplicação FastAPI/Starlette
-            provider: Provider para validação de API keys
-            header_name: Nome do header onde a API key é enviada
-            exempt_paths: Lista de paths que não requerem autenticação
-            on_error: Callback customizado para erros
-            include_metadata: Se True, adiciona metadados da key ao request.state
+            app: Application FastAPI/Starlette
+            provider: Provider to validate API keys
+            header_name: Header name to get an API key from
+            exempt_paths: Path list to exempt from authentication
+            on_error: Customized callback for error responses
+            include_metadata: If true, include metadata in request state
         """
         super().__init__(app)
         self.provider = provider
@@ -42,11 +38,9 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
         self.include_metadata = include_metadata
     
     async def dispatch(self, request: Request, call_next):
-        # Skip authentication for exempt paths
         if request.url.path in self.exempt_paths:
             return await call_next(request)
-        
-        # Get API key from header
+
         api_key = request.headers.get(self.header_name)
         
         if not api_key:
@@ -54,8 +48,7 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
                 status.HTTP_401_UNAUTHORIZED,
                 f"API key required in '{self.header_name}' header"
             )
-        
-        # Validate API key using provider
+
         try:
             is_valid = await self.provider.validate_key(api_key)
             
@@ -64,13 +57,11 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
                     status.HTTP_403_FORBIDDEN,
                     "Invalid API key"
                 )
-            
-            # Optionally include metadata in request state
+
             if self.include_metadata:
                 metadata = await self.provider.get_key_metadata(api_key)
                 request.state.api_key_metadata = metadata
-            
-            # Store API key in request state for downstream usage
+
             request.state.api_key = api_key
             
             return await call_next(request)
@@ -85,7 +76,6 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
             )
     
     def _error_response(self, status_code: int, detail: str):
-        """Helper para criar respostas de erro consistentes."""
         return JSONResponse(
             status_code=status_code,
             content={"detail": detail}

@@ -41,15 +41,15 @@ class BaseRateLimitProvider(ABC):
         window_seconds: int
     ) -> bool:
         """
-        Verifica se o limite de taxa foi excedido.
+        Verify if the request is within the rate limit.
         
         Args:
-            key: Identificador único (IP, API key, etc.)
-            limit: Número máximo de requests permitidos
-            window_seconds: Janela de tempo em segundos
+            key: Unique key to identify the request
+            limit: Maximum number of requests allowed in the window
+            window_seconds: Time window in seconds
             
         Returns:
-            True se dentro do limite, False se excedido
+            True if within limit, False otherwise
         """
         pass
     
@@ -60,27 +60,24 @@ class BaseRateLimitProvider(ABC):
         limit: int, 
         window_seconds: int
     ) -> int:
-        """Retorna o número de requests restantes."""
         pass
 
 
 class BaseIPWhitelistProvider(ABC):
-    """Interface abstrata para IP whitelist."""
     
     @abstractmethod
     async def is_ip_allowed(self, ip: str) -> bool:
         """
-        Verifica se o IP está na whitelist.
+        Verify if the IP is allowed.
         
         Args:
-            ip: Endereço IP a verificar
+            ip: Ip address to verify
             
         Returns:
-            True se permitido, False caso contrário
+            True if allowed, False otherwise
         """
         pass
     
     @abstractmethod
     async def get_allowed_ips(self) -> List[str]:
-        """Retorna lista de IPs permitidos."""
         pass

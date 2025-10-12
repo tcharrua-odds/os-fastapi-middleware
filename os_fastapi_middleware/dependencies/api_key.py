@@ -1,5 +1,3 @@
-"""Dependency para validação de API key em rotas específicas."""
-
 from typing import Optional
 from fastapi import Header, Depends, HTTPException, status
 
@@ -8,7 +6,6 @@ from os_fastapi_middleware.exceptions import UnauthorizedException, ForbiddenExc
 
 
 class APIKeyDependency:
-    """Dependency para validação de API key em rotas específicas."""
     
     def __init__(
         self,
@@ -37,7 +34,6 @@ class APIKeyDependency:
 
 
 def get_api_key_metadata(provider: BaseAPIKeyProvider):
-    """Dependency para obter metadados da API key."""
     
     async def dependency(api_key: str = Depends(APIKeyDependency(provider))):
         metadata = await provider.get_key_metadata(api_key)
