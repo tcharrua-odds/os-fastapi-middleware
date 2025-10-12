@@ -8,13 +8,13 @@ version = "1.0.1"
 description = "Adaptable security middlewares for FastAPI: API keys, rate limiting, IP whitelist"
 readme = "README.md"
 requires-python = ">=3.8"
-license = {text = "MIT"}
+license = { text = "MIT" }
 authors = [
-    {name = "Tiago Morais", email = "tcharrua@oddsscanner.com"}
+    { name = "Tiago Morais", email = "tcharrua@oddsscanner.com" }
 ]
 keywords = ["fastapi", "middleware", "security", "rate-limit", "api-key", "ip-whitelist"]
 classifiers = [
-    "Development Status :: 1 - Beta",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
@@ -50,3 +50,7 @@ Issues = "https://github.com/tcharrua-odds/os-fastapi-middleware/issues"
 [tool.pytest.ini_options]
 pythonpath = ["."]
 addopts = "-q"
+
+[tool.setuptools.packages.find]
+include = ["os_fastapi_middleware*"]
+where = ["."]
