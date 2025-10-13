@@ -3,8 +3,8 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-Name = "os-fastapi-middleware"
-Version = "1.0.1"
+name = "os-fastapi-middleware"
+version = "1.0.6"
 description = "Adaptable security middlewares for FastAPI: API keys, rate limiting, IP whitelist"
 readme = "README.md"
 requires-python = ">=3.8"
