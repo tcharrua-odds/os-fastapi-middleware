@@ -41,7 +41,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install "build==1.2.2.post1" "setuptools==68.2.2" "wheel==0.41.2"
       - name: Clean previous build artifacts
-        run: rm -rf dist build *.egg-info
+        run: |
+          rm -rf dist build
+          find . -type d -name "*.egg-info" -exec rm -rf {} + || true
       - name: Build sdist and wheel
         run: python -m build --no-isolation
       - name: Upload build artifacts
