@@ -9,8 +9,8 @@ app = FastAPI(title="My Secure API")
 # Configure providers
 api_key_provider = InMemoryAPIKeyProvider(
     valid_keys={
-        "secret-key-123": {"user": "john", "tier": "premium"},
-        "secret-key-456": {"user": "jane", "tier": "basic"},
+        "account_123": "secret-key-123",
+        "account_456": "secret-key-456",
     }
 )
 
@@ -49,4 +49,4 @@ async def root():
 async def secure_endpoint(request: Request):
     # Access metadata from middleware
     metadata = request.state.api_key_metadata
-    return {"message": f"Hello {metadata['user']}"}
+    return {"message": f"Hello, account: {metadata['account_id']}"}

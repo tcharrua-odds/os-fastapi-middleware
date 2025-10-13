@@ -12,11 +12,10 @@ from fastapi.responses import JSONResponse
 
 app = FastAPI(title="Selective Routes Example")
 
-# Providers para o exemplo (em produção, injete via container/config)
 api_key_provider = InMemoryAPIKeyProvider(
     valid_keys={
-        "route-key-123": {"user": "alice", "tier": "gold"},
-        "route-key-456": {"user": "bob", "tier": "free"},
+        "account_alice": "route-key-123",
+        "account_bob": "route-key-456",
     }
 )
 rate_limit_provider = InMemoryRateLimitProvider()
@@ -88,7 +87,7 @@ async def ip_only():
 
 @app.get("/api-key-only", dependencies=[Depends(require_api_key)])
 async def api_key_only(request: Request):
-    return {"user": request.state.api_key_metadata.get("user")}
+    return {"account_id": request.state.api_key_metadata.get("account_id")}
 
 
 @app.get(

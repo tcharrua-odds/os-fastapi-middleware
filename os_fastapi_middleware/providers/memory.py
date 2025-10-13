@@ -5,19 +5,24 @@ from .base import BaseAPIKeyProvider, BaseRateLimitProvider, BaseIPWhitelistProv
 
 class InMemoryAPIKeyProvider(BaseAPIKeyProvider):
     
-    def __init__(self, valid_keys: Dict[str, dict]):
+    def __init__(self, valid_keys: Dict[str, str]):
         """
         Args:
-            valid_keys: Dict with valid keys and metadata.
-                       Example: {"key123": {"user": "john", "tier": "premium"}}
+            valid_keys: Dict mapping account_id to api_key (string:string).
+                       Example: {"account_123": "secret-key-abc", "account_456": "secret-key-xyz"}
         """
         self.valid_keys = valid_keys
+        # Create reverse index for fast lookup: api_key -> account_id
+        self._key_to_account = {api_key: account_id for account_id, api_key in valid_keys.items()}
     
     async def validate_key(self, api_key: str) -> bool:
-        return api_key in self.valid_keys
+        return api_key in self._key_to_account
     
     async def get_key_metadata(self, api_key: str) -> dict:
-        return self.valid_keys.get(api_key)
+        account_id = self._key_to_account.get(api_key)
+        if account_id:
+            return {"account_id": account_id}
+        return None
 
 
 class InMemoryRateLimitProvider(BaseRateLimitProvider):

@@ -13,19 +13,20 @@ from fastapi import FastAPI, Depends, Header, HTTPException, status
 from os_fastapi_middleware.providers import InMemoryAPIKeyProvider
 
 app = FastAPI()
-api_key_provider = InMemoryAPIKeyProvider(valid_keys={"k": {"user": "u"}})
+api_key_provider = InMemoryAPIKeyProvider(valid_keys={"account_u": "k"})
 
 async def require_api_key(x_api_key: str = Header(None)):
     if not x_api_key:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing API key")
-    meta = await api_key_provider.validate_key(x_api_key)
-    if not meta:
+    is_valid = await api_key_provider.validate_key(x_api_key)
+    if not is_valid:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid API key")
+    meta = await api_key_provider.get_key_metadata(x_api_key)
     return meta
 
 @app.get("/only-this-route")
 async def only_this_route(meta = Depends(require_api_key)):
-    return {"ok": True, "user": meta.get("user")}
+    return {"ok": True, "account_id": meta.get("account_id")}
 ```
 
 See also examples/selective_routes.py for a more complete approach.
@@ -40,10 +41,16 @@ Implement your data sources by inheriting the base classes in `os_fastapi_middle
 from os_fastapi_middleware.providers import BaseAPIKeyProvider
 
 class MyAPIKeyProvider(BaseAPIKeyProvider):
-    async def validate_key(self, key: str):
-        # Fetch from a DB/external service and return metadata
+    async def validate_key(self, key: str) -> bool:
+        # Validate if key exists
         if key == "prod-key":
-            return {"user": "alice", "tier": "pro"}
+            return True
+        return False
+    
+    async def get_key_metadata(self, key: str) -> dict:
+        # Return account_id for the key
+        if key == "prod-key":
+            return {"account_id": "account_alice"}
         return None
 ```
 

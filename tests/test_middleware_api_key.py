@@ -11,15 +11,16 @@ def app_with_api_key():
     
     provider = InMemoryAPIKeyProvider(
         valid_keys={
-            "valid-key": {"user": "john"},
-            "admin-key": {"user": "admin", "role": "admin"}
+            "account_john": "valid-key",
+            "account_admin": "admin-key"
         }
     )
     
     app.add_middleware(
         APIKeyMiddleware,
         provider=provider,
-        include_metadata=True
+        include_metadata=True,
+        exempt_paths=["/health"]
     )
     
     @app.get("/")

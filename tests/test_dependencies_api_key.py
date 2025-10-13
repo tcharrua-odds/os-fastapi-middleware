@@ -8,7 +8,7 @@ from os_fastapi_middleware.providers.memory import InMemoryAPIKeyProvider
 
 @pytest.fixture
 def app():
-    provider = InMemoryAPIKeyProvider(valid_keys={"valid": {"user": "alice"}})
+    provider = InMemoryAPIKeyProvider(valid_keys={"account_alice": "valid"})
     api_key_dep = APIKeyDependency(provider)
 
     app = FastAPI()

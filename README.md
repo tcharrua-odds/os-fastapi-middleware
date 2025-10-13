@@ -29,7 +29,7 @@ from os_fastapi_middleware.providers import (
 app = FastAPI()
 
 api_key_provider = InMemoryAPIKeyProvider(valid_keys={
-    "secret-key-123": {"user": "john", "tier": "premium"}
+    "account_123": "secret-key-123"
 })
 rate_limit_provider = InMemoryRateLimitProvider()
 ip_whitelist_provider = InMemoryIPWhitelistProvider(allowed_ips=["127.0.0.1"]) 
@@ -40,10 +40,67 @@ app.add_middleware(IPWhitelistMiddleware, provider=ip_whitelist_provider)
 
 @app.get("/secure")
 async def secure(request: Request):
-    return {"hello": request.state.api_key_metadata["user"]}
+    return {"hello": request.state.api_key_metadata["account_id"]}
 ```
 
 More examples in examples/.
+
+## Per-route or route group usage
+
+You can also apply validations selectively to specific routes or route groups using dependencies:
+
+```python
+from fastapi import FastAPI, Depends, Request
+from os_fastapi_middleware.dependencies import APIKeyDependency, RateLimitDependency, IPWhitelistDependency
+from os_fastapi_middleware.providers import (
+    InMemoryAPIKeyProvider,
+    InMemoryRateLimitProvider,
+    InMemoryIPWhitelistProvider,
+)
+
+app = FastAPI()
+
+# Configure providers
+api_key_provider = InMemoryAPIKeyProvider(valid_keys={"account_123": "secret-key-123"})
+rate_limit_provider = InMemoryRateLimitProvider()
+ip_whitelist_provider = InMemoryIPWhitelistProvider(allowed_ips=["127.0.0.1"])
+
+# Create dependency instances
+api_key_dep = APIKeyDependency(provider=api_key_provider)
+rate_limit_dep = RateLimitDependency(provider=rate_limit_provider, requests_per_window=10, window_seconds=60)
+ip_whitelist_dep = IPWhitelistDependency(provider=ip_whitelist_provider)
+
+# Public route - no validation
+@app.get("/public")
+async def public():
+    return {"message": "This is public"}
+
+# Protected route - API key only
+@app.get("/protected", dependencies=[Depends(api_key_dep)])
+async def protected():
+    return {"message": "API key validated"}
+
+# Strict route - multiple validations
+@app.get("/admin", dependencies=[Depends(ip_whitelist_dep), Depends(api_key_dep), Depends(rate_limit_dep)])
+async def admin():
+    return {"message": "Admin area with all protections"}
+
+# Route group with shared dependencies
+from fastapi import APIRouter
+api_router = APIRouter(prefix="/api", dependencies=[Depends(api_key_dep)])
+
+@api_router.get("/data")
+async def get_data():
+    return {"data": "protected by API key"}
+
+@api_router.get("/stats")
+async def get_stats():
+    return {"stats": "also protected by API key"}
+
+app.include_router(api_router)
+```
+
+See examples/selective_routes.py for more details.
 
 ## Key features
 

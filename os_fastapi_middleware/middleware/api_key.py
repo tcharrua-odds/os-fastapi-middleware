@@ -30,17 +30,15 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
         self.provider = provider
         self.header_name = header_name
-        self.exempt_paths = exempt_paths or [
-            "/health", "/health/", 
-            "/docs", "/redoc", "/openapi.json"
-        ]
+        self.exempt_paths = exempt_paths or []
         self.on_error = on_error
         self.include_metadata = include_metadata
     
     async def dispatch(self, request: Request, call_next):
+        # Check if the path is exempt from authentication
         if request.url.path in self.exempt_paths:
             return await call_next(request)
-
+        
         api_key = request.headers.get(self.header_name)
         
         if not api_key:
@@ -75,7 +73,8 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
                 "Error validating API key"
             )
     
-    def _error_response(self, status_code: int, detail: str):
+    @staticmethod
+    def _error_response(status_code: int, detail: str):
         return JSONResponse(
             status_code=status_code,
             content={"detail": detail}
