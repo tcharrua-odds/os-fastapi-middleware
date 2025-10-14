@@ -1,29 +1,34 @@
-from typing import Optional, List, Dict
-import redis.asyncio as redis
+from typing import Optional, Dict, Any
 from .base import BaseRateLimitProvider, BaseAPIKeyProvider
 
 
 class RedisRateLimitProvider(BaseRateLimitProvider):
-    
-    def __init__(self, redis_url: str = "redis://localhost:6379"):
-        self.redis_url = redis_url
-        self.redis_client: Optional[redis.Redis] = None
-    
-    async def init(self):
-        # redis.asyncio.from_url returns an async Redis client; no await needed
-        self.redis_client = redis.from_url(
-            self.redis_url,
-            encoding="utf-8",
-            decode_responses=True
-        )
+    """Rate limit provider that uses an injected async Redis-like client.
+
+    This avoids taking a hard dependency on the redis package. Provide any client
+    that implements the minimal async methods used here: incr, expire, get, and
+    optionally aclose/close for cleanup.
+    """
+
+    def __init__(self, redis_client: Any):
+        self.redis_client = redis_client
     
     async def close(self):
-        if self.redis_client:
-            try:
-                await self.redis_client.aclose()
-            except AttributeError:
-                # Fallback for older versions
-                await self.redis_client.close()
+        client = getattr(self, "redis_client", None)
+        if client:
+            # Try graceful async close if available
+            close_fn = getattr(client, "aclose", None)
+            if callable(close_fn):
+                await close_fn()
+                return
+            # Fallback for older/other clients
+            close_fn = getattr(client, "close", None)
+            if callable(close_fn):
+                try:
+                    await close_fn()
+                except TypeError:
+                    # non-async close
+                    close_fn()
     
     async def check_rate_limit(
         self, 
@@ -32,7 +37,7 @@ class RedisRateLimitProvider(BaseRateLimitProvider):
         window_seconds: int
     ) -> bool:
         if not self.redis_client:
-            await self.init()
+            raise RuntimeError("Redis client not configured. Pass a client instance to RedisRateLimitProvider(redis_client=...).")
 
         current = await self.redis_client.incr(key)
 
@@ -48,7 +53,7 @@ class RedisRateLimitProvider(BaseRateLimitProvider):
         window_seconds: int
     ) -> int:
         if not self.redis_client:
-            await self.init()
+            raise RuntimeError("Redis client not configured. Pass a client instance to RedisRateLimitProvider(redis_client=...).")
         
         current = await self.redis_client.get(key)
         if not current:
@@ -58,32 +63,37 @@ class RedisRateLimitProvider(BaseRateLimitProvider):
 
 
 class RedisAPIKeyProvider(BaseAPIKeyProvider):
+    """API key provider backed by an injected async Redis-like client.
+
+    Provide any client that implements: scan, mget, get/set/delete, and
+    optionally aclose/close for cleanup.
+    """
     
-    def __init__(self, redis_url: str = "redis://localhost:6379", key_prefix: str = "apikey:"):
+    def __init__(self, redis_client: Any, key_prefix: str = "apikey:"):
         """
         Args:
-            redis_url: Redis connection URL
+            redis_client: An async Redis-compatible client instance (e.g., redis.asyncio.Redis).
             key_prefix: Prefix for Redis keys to store account_id -> api_key mappings
         """
-        self.redis_url = redis_url
+        self.redis_client = redis_client
         self.key_prefix = key_prefix
-        self.redis_client: Optional[redis.Redis] = None
-    
-    async def init(self):
-        """Initialize Redis connection."""
-        self.redis_client = redis.from_url(
-            self.redis_url,
-            encoding="utf-8",
-            decode_responses=True
-        )
     
     async def close(self):
-        """Close Redis connection."""
-        if self.redis_client:
+        client = getattr(self, "redis_client", None)
+        if client:
             try:
-                await self.redis_client.aclose()
-            except AttributeError:
-                await self.redis_client.close()
+                close_fn = getattr(client, "aclose")
+                if callable(close_fn):
+                    await close_fn()
+                    return
+            except Exception:
+                pass
+            close_fn = getattr(client, "close", None)
+            if callable(close_fn):
+                try:
+                    await close_fn()
+                except TypeError:
+                    close_fn()
     
     async def validate_key(self, api_key: str) -> bool:
         """
@@ -91,7 +101,7 @@ class RedisAPIKeyProvider(BaseAPIKeyProvider):
         For better performance, consider maintaining a reverse index.
         """
         if not self.redis_client:
-            await self.init()
+            raise RuntimeError("Redis client not configured. Pass a client instance to RedisAPIKeyProvider(redis_client=...).")
         
         # Scan all keys with prefix to find matching api_key
         cursor = 0
@@ -113,7 +123,7 @@ class RedisAPIKeyProvider(BaseAPIKeyProvider):
         Get metadata (account_id) for the given api_key.
         """
         if not self.redis_client:
-            await self.init()
+            raise RuntimeError("Redis client not configured. Pass a client instance to RedisAPIKeyProvider(redis_client=...).")
         
         # Scan to find the account_id for this api_key
         cursor = 0
@@ -138,7 +148,7 @@ class RedisAPIKeyProvider(BaseAPIKeyProvider):
         Store account_id -> api_key mapping in Redis.
         """
         if not self.redis_client:
-            await self.init()
+            raise RuntimeError("Redis client not configured. Pass a client instance to RedisAPIKeyProvider(redis_client=...).")
         
         await self.redis_client.set(f"{self.key_prefix}{account_id}", api_key)
     
@@ -147,6 +157,6 @@ class RedisAPIKeyProvider(BaseAPIKeyProvider):
         Delete account_id -> api_key mapping from Redis.
         """
         if not self.redis_client:
-            await self.init()
+            raise RuntimeError("Redis client not configured. Pass a client instance to RedisAPIKeyProvider(redis_client=...).")
         
         await self.redis_client.delete(f"{self.key_prefix}{account_id}")
