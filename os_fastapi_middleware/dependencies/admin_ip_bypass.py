@@ -22,11 +22,11 @@ class AdminIPBypassDependency:
 
     def __init__(
         self,
-        admin_ips: Union[str, List[str]],
+        admin_ips: Optional[Union[str, List[str]]] = None,
         trust_proxy_headers: bool = True,
         on_match: Optional[Callable[[Request, str], None]] = None,
         auto_error: bool = False,
-    ):
+    ): 
         if isinstance(admin_ips, str):
             self.admin_ips = {admin_ips}
         else:

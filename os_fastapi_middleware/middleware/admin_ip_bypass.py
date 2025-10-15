@@ -20,11 +20,11 @@ class AdminIPBypassMiddleware(BaseHTTPMiddleware):
     def __init__(
         self,
         app,
-        admin_ips: Union[str, List[str]],
+        admin_ips: Optional[Union[str, List[str]]] = None,
         exempt_paths: Optional[List[str]] = None,
         trust_proxy_headers: bool = True,
         on_match: Optional[Callable[[Request, str], None]] = None,
-    ):
+    ): 
         super().__init__(app)
         if isinstance(admin_ips, str):
             self.admin_ips = {admin_ips}
