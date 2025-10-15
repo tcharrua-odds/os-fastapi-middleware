@@ -1,5 +1,5 @@
 from typing import Optional
-from fastapi import Header, Depends, HTTPException, status
+from fastapi import Header, Depends, Request
 
 from os_fastapi_middleware.providers.base import BaseAPIKeyProvider
 from os_fastapi_middleware.exceptions import UnauthorizedException, ForbiddenException
@@ -17,7 +17,11 @@ class APIKeyDependency:
         self.header_name = header_name
         self.auto_error = auto_error
     
-    async def __call__(self, api_key: Optional[str] = Header(None, alias="X-API-Key")):
+    async def __call__(self, request: Request, api_key: Optional[str] = Header(None, alias="X-API-Key")):
+        # Admin bypass short-circuit: when request.state.admin_bypass is True, skip API key checks
+        if getattr(request.state, "admin_bypass", False):
+            return True
+
         if not api_key:
             if self.auto_error:
                 raise UnauthorizedException(f"API key required in '{self.header_name}' header")

@@ -36,6 +36,10 @@ class RateLimitDependency:
         return f"rate_limit:ip:{client_ip}"
 
     async def __call__(self, request: Request):
+        # Admin bypass short-circuit: when request.state.admin_bypass is True, skip rate limiting
+        if getattr(request.state, 'admin_bypass', False):
+            return True
+
         key = self.key_func(request)
 
         within_limit = await self.provider.check_rate_limit(
