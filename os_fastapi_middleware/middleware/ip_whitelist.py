@@ -79,7 +79,9 @@ class IPWhitelistMiddleware(BaseHTTPMiddleware):
                     content={"detail": f"IP {client_ip} is not whitelisted"}
                 )
 
+            # Mark request as allowed by IP whitelist to inform downstream middlewares
             request.state.client_ip = client_ip
+            request.state.ip_whitelist_allowed = True
 
             return await call_next(request)
 

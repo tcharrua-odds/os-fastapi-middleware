@@ -30,6 +30,7 @@ from .middleware.api_key import APIKeyMiddleware
 from .middleware.ip_whitelist import IPWhitelistMiddleware
 from .middleware.rate_limit import RateLimitMiddleware
 from .middleware.request_logger import RequestLoggingMiddleware
+from .middleware.admin_ip_bypass import AdminIPBypassMiddleware
 
 __version__ = "1.1.1"
 
@@ -39,6 +40,7 @@ __all__ = [
     "RateLimitMiddleware",
     "IPWhitelistMiddleware",
     "RequestLoggingMiddleware",
+    "AdminIPBypassMiddleware",
 
     # Dependencies
     "APIKeyDependency",

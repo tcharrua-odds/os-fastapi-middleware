@@ -65,6 +65,11 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         if request.url.path in self.exempt_paths:
             return await call_next(request)
 
+
+        # If admin bypass is active, skip rate limiting
+        if getattr(request.state, 'admin_bypass', False):
+            return await call_next(request)
+
         rate_limit_key = self.key_func(request)
         
         try:

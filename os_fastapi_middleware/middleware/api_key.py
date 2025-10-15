@@ -38,6 +38,10 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
         # Check if the path is exempt from authentication
         if request.url.path in self.exempt_paths:
             return await call_next(request)
+
+        # If admin bypass is active, skip API key check
+        if getattr(request.state, 'admin_bypass', False):
+            return await call_next(request)
         
         api_key = request.headers.get(self.header_name)
         
