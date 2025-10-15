@@ -59,6 +59,13 @@ class IPWhitelistMiddleware(BaseHTTPMiddleware):
         if request.url.path in self.exempt_paths:
             return await call_next(request)
 
+        # If admin bypass is active, skip whitelist checks entirely
+        if getattr(request.state, 'admin_bypass', False):
+            # Ensure client_ip is present for downstream consumers
+            if not getattr(request.state, 'client_ip', None):
+                request.state.client_ip = self._get_client_ip(request)
+            return await call_next(request)
+
         client_ip = self._get_client_ip(request)
 
         if not client_ip:

@@ -28,6 +28,14 @@ class IPWhitelistDependency:
             return "127.0.0.1"
     
     async def __call__(self, request: Request):
+        # If admin bypass is active, skip whitelist checks entirely
+        if getattr(request.state, "admin_bypass", False):
+            # Ensure client_ip is available downstream
+            client_ip = getattr(request.state, "client_ip", None) or self._get_client_ip(request)
+            if not getattr(request.state, "client_ip", None):
+                request.state.client_ip = client_ip
+            return client_ip
+
         client_ip = self._get_client_ip(request)
         
         if not client_ip:
