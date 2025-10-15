@@ -19,6 +19,7 @@ from .config import (
 from .dependencies.api_key import APIKeyDependency
 from .dependencies.ip_whitelist import IPWhitelistDependency
 from .dependencies.rate_limit import RateLimitDependency
+from .dependencies.admin_ip_bypass import AdminIPBypassDependency
 from .exceptions import (
     SecurityException,
     UnauthorizedException,
@@ -46,6 +47,7 @@ __all__ = [
     "APIKeyDependency",
     "RateLimitDependency",
     "IPWhitelistDependency",
+    "AdminIPBypassDependency",
 
     # Providers Base
     "BaseAPIKeyProvider",
