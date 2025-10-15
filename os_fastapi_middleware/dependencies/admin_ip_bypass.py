@@ -57,12 +57,14 @@ class AdminIPBypassDependency:
     async def __call__(self, request: Request):
         client_ip = self._get_client_ip(request)
 
-        # Propagate client_ip if not already set
-        if not getattr(request.state, "client_ip", None):
-            request.state.client_ip = client_ip
+        # Always propagate the current client_ip for this request
+        request.state.client_ip = client_ip
 
-        if client_ip in self.admin_ips:
-            request.state.admin_bypass = True
+        # Reset and set admin_bypass strictly based on current request IP
+        is_admin = client_ip in self.admin_ips
+        request.state.admin_bypass = bool(is_admin)
+
+        if is_admin:
             if self.on_match:
                 try:
                     self.on_match(request, client_ip)

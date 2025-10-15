@@ -58,20 +58,19 @@ class AdminIPBypassMiddleware(BaseHTTPMiddleware):
         if request.url.path in self.exempt_paths:
             return await call_next(request)
 
+        # Always compute and set the current client IP for this request
         client_ip = self._get_client_ip(request)
+        request.state.client_ip = client_ip
 
-        # Mark client_ip for downstream if not already set
-        if not getattr(request.state, "client_ip", None):
-            request.state.client_ip = client_ip
+        # Reset admin_bypass on every request, then set it only if current IP matches
+        is_admin = client_ip in self.admin_ips
+        request.state.admin_bypass = bool(is_admin)
 
-        if client_ip in self.admin_ips:
-            # Mark as admin bypass so other middlewares can skip checks
-            request.state.admin_bypass = True
-            if self.on_match:
-                try:
-                    self.on_match(request, client_ip)
-                except Exception:
-                    # Swallow callback errors to avoid affecting request flow
-                    pass
+        if is_admin and self.on_match:
+            try:
+                self.on_match(request, client_ip)
+            except Exception:
+                # Swallow callback errors to avoid affecting request flow
+                pass
 
         return await call_next(request)
