@@ -81,3 +81,24 @@ class BaseIPWhitelistProvider(ABC):
     @abstractmethod
     async def get_allowed_ips(self) -> List[str]:
         pass
+
+
+class BaseRequestLogProvider(ABC):
+    """Abstract interface for request logging backends.
+
+    Implement this in your project (e.g., using Elasticsearch) and pass an
+    instance to RequestLoggingMiddleware. Avoids adding external deps here.
+    """
+
+    @abstractmethod
+    async def log(self, record: dict) -> None:
+        """Persist a single request/response record.
+
+        The `record` is a JSON-serializable dict with keys including:
+        - timestamp: ISO 8601 string (UTC)
+        - method, path, query, client_ip, user_agent, request_id
+        - status_code, duration_ms, content_length, response_length
+        - headers (subset): referer, host, forwarded_for, real_ip
+        - any extra fields set via middleware `extra_fields`.
+        """
+        pass

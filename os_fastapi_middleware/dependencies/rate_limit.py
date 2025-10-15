@@ -23,7 +23,7 @@ class RateLimitDependency:
         if hasattr(request.state, 'api_key'):
             return f"rate_limit:api_key:{request.state.api_key}"
 
-        # Try common proxy headers first, then fall back to client host
+        # Try common proxy headers first, then fall back to the client host
         forwarded_for = request.headers.get("X-Forwarded-For")
         if forwarded_for:
             client_ip = forwarded_for.split(",")[0].strip()

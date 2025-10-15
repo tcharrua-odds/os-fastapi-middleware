@@ -8,6 +8,9 @@ class RedisRateLimitProvider(BaseRateLimitProvider):
     This avoids taking a hard dependency on the redis package. Provide any client
     that implements the minimal async methods used here: incr, expire, get, and
     optionally aclose/close for cleanup.
+
+    Compatible with wrapper clients that expose get_client() returning an
+    underlying Redis client that has incr/expire.
     """
 
     def __init__(self, redis_client: Any):
@@ -39,10 +42,27 @@ class RedisRateLimitProvider(BaseRateLimitProvider):
         if not self.redis_client:
             raise RuntimeError("Redis client not configured. Pass a client instance to RedisRateLimitProvider(redis_client=...).")
 
-        current = await self.redis_client.incr(key)
+        client = self.redis_client
+        # Prefer incr on the provided client if available
+        incr_fn = getattr(client, "incr", None)
+        expire_fn = getattr(client, "expire", None)
+
+        # If the wrapper does not expose incr (e.g., a custom RedisClient), try its underlying client
+        if not callable(incr_fn) or not callable(expire_fn):
+            get_client = getattr(client, "get_client", None)
+            if callable(get_client):
+                inner = get_client()
+                incr_fn = getattr(inner, "incr", None)
+                expire_fn = getattr(inner, "expire", None)
+                client = inner if callable(incr_fn) and callable(expire_fn) else client
+
+        if not callable(incr_fn) or not callable(expire_fn):
+            raise RuntimeError("Provided redis_client does not expose 'incr'/'expire' nor provide an underlying client via get_client().")
+
+        current = await incr_fn(key)
 
         if current == 1:
-            await self.redis_client.expire(key, window_seconds)
+            await expire_fn(key, window_seconds)
         
         return current <= limit
     

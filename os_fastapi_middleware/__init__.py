@@ -2,7 +2,8 @@
 from os_fastapi_middleware.providers.base import (
     BaseAPIKeyProvider,
     BaseRateLimitProvider,
-    BaseIPWhitelistProvider
+    BaseIPWhitelistProvider,
+    BaseRequestLogProvider,
 )
 from os_fastapi_middleware.providers.memory import (
     InMemoryAPIKeyProvider,
@@ -28,6 +29,7 @@ from .exceptions import (
 from .middleware.api_key import APIKeyMiddleware
 from .middleware.ip_whitelist import IPWhitelistMiddleware
 from .middleware.rate_limit import RateLimitMiddleware
+from .middleware.request_logger import RequestLoggingMiddleware
 
 __version__ = "1.1.1"
 
@@ -36,6 +38,7 @@ __all__ = [
     "APIKeyMiddleware",
     "RateLimitMiddleware",
     "IPWhitelistMiddleware",
+    "RequestLoggingMiddleware",
 
     # Dependencies
     "APIKeyDependency",
